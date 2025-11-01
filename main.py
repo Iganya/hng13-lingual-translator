@@ -16,17 +16,17 @@ load_dotenv()
 # if not groq_api_key:
 #     raise ValueError("GROQ_API_KEY environment variable is not set")
 
-groq_api_key = (
-    os.environ.get("GROQ_API_KEY") or 
-    os.getenv("GROQ_API_KEY") or 
-    None
-)
-if not groq_api_key:
-    # Debug: print all env vars (remove after testing)
-    print("Available env vars:", list(os.environ.keys()))
-    raise ValueError("GROQ_API_KEY environment variable is not set")
+# groq_api_key = (
+#     os.environ.get("GROQ_API_KEY") or 
+#     os.getenv("GROQ_API_KEY") or 
+#     None
+# )
+# if not groq_api_key:
+#     # Debug: print all env vars (remove after testing)
+#     print("Available env vars:", list(os.environ.keys()))
+#     raise ValueError("GROQ_API_KEY environment variable is not set")
 
-client = Groq(api_key=groq_api_key)
+# client = Groq(api_key=groq_api_key)
 
 class TranslationRequest(BaseModel):
     text: str 
@@ -62,10 +62,16 @@ system_prompt = (""" You are **TransBot**, a fast, accurate multilingual transla
                 
 """)
 
-
 @app.post('/translate')
 async def language_translator(req: TranslationRequest):
     try:
+        # Initialize client inside the route
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        if not groq_api_key:
+            raise HTTPException(status_code=500, detail="GROQ_API_KEY not configured")
+        
+        client = Groq(api_key=groq_api_key)
+        
         text = req.text
         target_lang = req.target_lang
         if not target_lang:
@@ -84,13 +90,42 @@ async def language_translator(req: TranslationRequest):
                 }
             ]
         )
-        response =  completion.choices[0].message.content
+        response = completion.choices[0].message.content
         return JSONResponse(
             content=json.loads(response),
-            status_code= 200
+            status_code=200
         )
     except Exception as e:
         return JSONResponse(content={"message": "An error occured"}, status_code=500)
+
+# @app.post('/translate')
+# async def language_translator(req: TranslationRequest):
+#     try:
+#         text = req.text
+#         target_lang = req.target_lang
+#         if not target_lang:
+#             target_lang = "English"
+        
+#         completion = client.chat.completions.create(
+#             model="llama-3.3-70b-versatile",
+#             messages=[
+#                 {
+#                     "role": "system",
+#                     "content": system_prompt
+#                 },
+#                 {
+#                     "role": "user",
+#                     "content": f""""Translate the following text to **{target_lang}**:\n\n\"\"\"\n{text}\n\"\"\""""
+#                 }
+#             ]
+#         )
+#         response =  completion.choices[0].message.content
+#         return JSONResponse(
+#             content=json.loads(response),
+#             status_code= 200
+#         )
+#     except Exception as e:
+#         return JSONResponse(content={"message": "An error occured"}, status_code=500)
 
 
 @app.get('/')
