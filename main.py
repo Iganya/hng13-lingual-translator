@@ -12,8 +12,18 @@ app = FastAPI()
 
 load_dotenv()
 
-groq_api_key = os.getenv("GROQ_API_KEY")
+# groq_api_key = os.getenv("GROQ_API_KEY")
+# if not groq_api_key:
+#     raise ValueError("GROQ_API_KEY environment variable is not set")
+
+groq_api_key = (
+    os.environ.get("GROQ_API_KEY") or 
+    os.getenv("GROQ_API_KEY") or 
+    None
+)
 if not groq_api_key:
+    # Debug: print all env vars (remove after testing)
+    print("Available env vars:", list(os.environ.keys()))
     raise ValueError("GROQ_API_KEY environment variable is not set")
 
 client = Groq(api_key=groq_api_key)
