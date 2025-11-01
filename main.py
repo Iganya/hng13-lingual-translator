@@ -79,3 +79,8 @@ async def language_translator(req: TranslationRequest):
         )
     except Exception as e:
         return JSONResponse(content={"message": "An error occured"}, status_code=500)
+
+
+@app.get('/')
+def home():
+    return "Welcome to Lingual Translate home page"
