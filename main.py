@@ -51,7 +51,7 @@ system_prompt = (""" You are **TransBot**, a fast, accurate multilingual transla
 """)
 
 
-@app.post('/a2a/agent/lingualAgent')
+@app.post('/translate')
 async def language_translator(req: TranslationRequest):
     try:
         text = req.text
