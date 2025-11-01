@@ -10,7 +10,7 @@ import os
 
 app = FastAPI()
 
-load_dotenv('.env')
+load_dotenv()
 
 groq_api_key = os.getenv("GROQ_API_KEY")
 
@@ -51,33 +51,31 @@ system_prompt = (""" You are **TransBot**, a fast, accurate multilingual transla
 """)
 
 
-@app.post('/translate')
+@app.post('/a2a/agent/lingualAgent')
 async def language_translator(req: TranslationRequest):
-    text = req.text
-    target_lang = req.target_lang
-    if not target_lang:
-        target_lang = "English"
-    
-    completion = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {
-                "role": "system",
-                "content": system_prompt
-            },
-            {
-                "role": "user",
-                "content": f""""Translate the following text to **{target_lang}**:\n\n\"\"\"\n{text}\n\"\"\""""
-            }
-        ]
-    )
-    response =  completion.choices[0].message.content
-    return JSONResponse(
-        content=json.loads(response),
-        status_code= 200
-    )
-
-
-@app.get('/')
-def hello():
-    return "Welcome to home page"
+    try:
+        text = req.text
+        target_lang = req.target_lang
+        if not target_lang:
+            target_lang = "English"
+        
+        completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "system",
+                    "content": system_prompt
+                },
+                {
+                    "role": "user",
+                    "content": f""""Translate the following text to **{target_lang}**:\n\n\"\"\"\n{text}\n\"\"\""""
+                }
+            ]
+        )
+        response =  completion.choices[0].message.content
+        return JSONResponse(
+            content=json.loads(response),
+            status_code= 200
+        )
+    except Exception as e:
+        return JSONResponse(content={"message": "An error occured"}, status_code=500)
